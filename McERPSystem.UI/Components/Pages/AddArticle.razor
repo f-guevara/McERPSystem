@@ -1,0 +1,62 @@
+﻿@page "/add-article"
+@inject McERPSystem.Services.Inventory.IArticleService ArticleService
+
+<h3>Add New Article</h3>
+
+<EditForm Model="@article" OnValidSubmit="SaveArticle">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Company Code</label>
+        <InputText @bind-Value="article.CompanyCode" class="form-control" />
+    </div>
+
+    <div>
+        <label>Name</label>
+        <InputText @bind-Value="article.Name" class="form-control" />
+    </div>
+
+    <div>
+        <label>Type</label>
+        <InputSelect @bind-Value="article.Type" class="form-control">
+            @foreach (var type in Enum.GetValues(typeof(McERPSystem.Services.Models.ArticleType)).Cast<McERPSystem.Services.Models.ArticleType>())
+            {
+                <option value="@type">@type</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div>
+        <label>Price</label>
+        <InputNumber @bind-Value="article.Price" class="form-control" />
+    </div>
+
+    <div>
+        <label>Quantity</label>
+        <InputNumber @bind-Value="article.Quantity" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Article</button>
+</EditForm>
+
+<p>@message</p>
+
+@code {
+    private McERPSystem.Services.Models.Article article = new McERPSystem.Services.Models.Article();
+    private string message;
+
+    private async Task SaveArticle()
+    {
+        try
+        {
+            await ArticleService.AddArticleAsync(article);
+            message = "Article saved successfully!";
+            article = new McERPSystem.Services.Models.Article(); // Reset form
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+        }
+    }
+}

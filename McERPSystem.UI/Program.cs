@@ -1,10 +1,21 @@
 using McERPSystem.UI.Components;
+using Microsoft.EntityFrameworkCore;
+using McERPSystem.Services;
+using McERPSystem.Services.Inventory;
+using McERPSystem.Services.Clients;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IArticleService, ArticleService>();
+builder.Services.AddScoped<IClientService, ClientService>();
 
 var app = builder.Build();
 

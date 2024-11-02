@@ -1,0 +1,72 @@
+﻿@page "/add-client"
+@inject McERPSystem.Services.Clients.IClientService ClientService
+
+<h3>Add New Client</h3>
+
+<EditForm Model="@client" OnValidSubmit="SaveClient">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>First Name</label>
+        <InputText @bind-Value="client.FirstName" class="form-control" />
+    </div>
+
+    <div>
+        <label>Last Name</label>
+        <InputText @bind-Value="client.LastName" class="form-control" />
+    </div>
+
+    <div>
+        <label>Address</label>
+        <InputText @bind-Value="client.Address" class="form-control" />
+    </div>
+
+    <div>
+        <label>City</label>
+        <InputText @bind-Value="client.City" class="form-control" />
+    </div>
+
+    <div>
+        <label>Postal Code</label>
+        <InputText @bind-Value="client.PostalCode" class="form-control" />
+    </div>
+
+    <div>
+        <label>Country</label>
+        <InputText @bind-Value="client.Country" class="form-control" />
+    </div>
+
+    <div>
+        <label>Email</label>
+        <InputText @bind-Value="client.Email" class="form-control" />
+    </div>
+
+    <div>
+        <label>Phone</label>
+        <InputText @bind-Value="client.Phone" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Client</button>
+</EditForm>
+
+<p>@message</p>
+
+@code {
+    private McERPSystem.Services.Models.Client client = new McERPSystem.Services.Models.Client();
+    private string message;
+
+    private async Task SaveClient()
+    {
+        try
+        {
+            await ClientService.AddClientAsync(client);
+            message = "Client saved successfully!";
+            client = new McERPSystem.Services.Models.Client(); // Reset form
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+        }
+    }
+}
