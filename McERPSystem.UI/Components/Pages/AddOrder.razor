@@ -2,7 +2,7 @@
 @inject McERPSystem.Services.Orders.IOrderService OrderService
 @inject McERPSystem.Services.Clients.IClientService ClientService
 @inject McERPSystem.Services.Inventory.IArticleService ArticleService
-@using McERPSystem.Services.Models;
+@using McERPSystem.Services.Models
 
 <h3>Add New Order</h3>
 
@@ -27,7 +27,7 @@
         {
             <div>
                 <label>Article</label>
-                <InputSelect @bind-Value="item.ArticleId">
+                <InputSelect @bind-Value="item.ArticleId" @onchange="CheckStock">
                     @foreach (var article in articles)
                     {
                         <option value="@article.Id">@article.Name</option>
@@ -35,14 +35,30 @@
                 </InputSelect>
 
                 <label>Quantity</label>
-                <InputNumber @bind-Value="item.Quantity" />
+                <InputNumber @bind-Value="item.Quantity" @oninput="CheckStock" />
 
                 <label>Price</label>
                 <InputNumber @bind-Value="item.Price" />
+
+                <!-- Stock Status Indicator -->
+                <span class="stock-indicator">
+                    @if (articles.FirstOrDefault(a => a.Id == item.ArticleId)?.Quantity >= item.Quantity)
+                    {
+                        <span style="color:green">✔️ In Stock</span>
+                    }
+                    else
+                    {
+                        <span style="color:red">❌ Out of Stock</span>
+                    }
+                </span>
+
+                <!-- Delete Button for the Item -->
+                <button type="button" class="btn btn-danger" @onclick="() => RemoveOrderItem(item)">Delete</button>
             </div>
         }
         <button type="button" @onclick="AddOrderItem">Add Item</button>
     </div>
+
     <hr />
 
     <div>
@@ -74,11 +90,35 @@
         order.OrderItems.Add(new OrderItem());
     }
 
+    private void RemoveOrderItem(OrderItem item)
+    {
+        order.OrderItems.Remove(item);
+    }
+
+    private void CheckStock()
+    {
+        // No specific logic needed here as the stock status updates dynamically in the UI
+    }
+
     private async Task SaveOrder()
     {
         try
         {
             await OrderService.AddOrderAsync(order);
+            // Update stock for each article in the order
+            foreach (var item in order.OrderItems)
+            {
+                var article = articles.FirstOrDefault(a => a.Id == item.ArticleId);
+                if (article != null)
+                {
+                    // Reduce the article quantity by the quantity ordered
+                    article.Quantity -= item.Quantity;
+
+                    // Update the article in the database
+                    await ArticleService.UpdateArticleAsync(article);
+                }
+            }
+
             message = "Order saved successfully!";
             order = new Order(); // Reset the form
         }
@@ -88,4 +128,3 @@
         }
     }
 }
-
