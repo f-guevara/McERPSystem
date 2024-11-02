@@ -16,6 +16,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<McERPSystem.Services.Orders.IOrderService, McERPSystem.Services.Orders.OrderService>();
+
 
 var app = builder.Build();
 

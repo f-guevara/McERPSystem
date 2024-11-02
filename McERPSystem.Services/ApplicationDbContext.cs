@@ -15,6 +15,9 @@ namespace McERPSystem.Services
         public DbSet<Article> Articles { get; set; }
 
         public DbSet<Client> Clients { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
