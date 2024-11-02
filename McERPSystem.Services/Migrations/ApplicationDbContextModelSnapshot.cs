@@ -112,9 +112,6 @@ namespace McERPSystem.Services.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("numeric");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");

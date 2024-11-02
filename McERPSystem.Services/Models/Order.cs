@@ -13,6 +13,11 @@ namespace McERPSystem.Services.Models
         public Client Client { get; set; } // Navigation property
         public DateTime OrderDate { get; set; }
         public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-        public decimal TotalAmount { get; set; }
+        // Computed property for total pieces
+        public int TotalPieces => OrderItems.Sum(item => item.Quantity);
+
+        public decimal TotalAmount => OrderItems.Sum(item => item.Quantity * item.Price);
+
+
     }
 }

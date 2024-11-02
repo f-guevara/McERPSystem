@@ -43,6 +43,14 @@
         }
         <button type="button" @onclick="AddOrderItem">Add Item</button>
     </div>
+    <hr />
+
+    <div>
+        <strong>Total Pieces:</strong> @order.TotalPieces
+    </div>
+    <div>
+        <strong>Total Amount:</strong> @order.TotalAmount
+    </div>
 
     <button type="submit" class="btn btn-primary">Save Order</button>
 </EditForm>
