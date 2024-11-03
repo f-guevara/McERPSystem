@@ -1,0 +1,100 @@
+﻿@page "/create-invoice/{orderId:int}"
+@inject McERPSystem.Services.Invoices.IInvoiceService InvoiceService
+@inject McERPSystem.Services.Orders.IOrderService OrderService
+@using McERPSystem.Services.Models
+
+<h3>Create Partial Invoice</h3>
+
+<EditForm Model="@invoice" OnValidSubmit="SaveInvoice">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <h5>Order Items</h5>
+        @foreach (var item in orderItems)
+        {
+            <div>
+                <label>Article: @item.Article.Name</label>
+
+                <label>Total Ordered Quantity: @item.Quantity</label>
+
+                <label>Remaining Quantity to Ship: @item.RemainingQuantity</label>
+
+                <label>Quantity to Invoice</label>
+                <InputNumber @bind-Value="item.QuantityToInvoice" />
+
+                <label>Price: @item.Price</label>
+            </div>
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Invoice</button>
+</EditForm>
+
+<p>@message</p>
+
+@code {
+    [Parameter] public int orderId { get; set; }
+    private Invoice invoice = new Invoice();
+    private List<OrderItemViewModel> orderItems = new List<OrderItemViewModel>();
+    private string message;
+
+    // ViewModel for displaying order items with QuantityToInvoice
+    private class OrderItemViewModel
+    {
+        public int Id { get; set; }
+        public int ArticleId { get; set; }
+        public Article Article { get; set; }
+        public int Quantity { get; set; } // Total ordered quantity
+        public int RemainingQuantity { get; set; } // Remaining quantity to invoice
+        public int QuantityToInvoice { get; set; } // Quantity to be invoiced (user input)
+        public decimal Price { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var order = await OrderService.GetOrderByIdAsync(orderId);
+        if (order != null)
+        {
+            foreach (var oi in order.OrderItems)
+            {
+                // Calculate total invoiced quantity for this OrderItem
+                var totalInvoicedQuantity = await InvoiceService.GetTotalInvoicedQuantityForOrderItem(oi.Id);
+
+                // Add to the view model
+                orderItems.Add(new OrderItemViewModel
+                    {
+                        Id = oi.Id,
+                        ArticleId = oi.ArticleId,
+                        Article = oi.Article,
+                        Quantity = oi.Quantity,
+                        RemainingQuantity = oi.Quantity - totalInvoicedQuantity,
+                        Price = oi.Price,
+                        QuantityToInvoice = 0 // Initialize for user input
+                    });
+            }
+        }
+    }
+
+    private async Task SaveInvoice()
+    {
+        try
+        {
+            var invoiceItems = orderItems
+                .Where(i => i.QuantityToInvoice > 0 && i.QuantityToInvoice <= i.RemainingQuantity) // Only include items within limits
+                .Select(i => new InvoiceItem
+                    {
+                        OrderItemId = i.Id,
+                        QuantityInvoiced = i.QuantityToInvoice,
+                        Price = i.Price
+                    }).ToList();
+
+            invoice = await InvoiceService.CreateInvoiceAsync(orderId, invoiceItems);
+            message = "Partial invoice created successfully!";
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+        }
+    }
+}
